@@ -32,7 +32,9 @@ _Making holes for sensors_
 
 Position the battery pack as shown below. Ensure that there is room for the front wheel riser on the bottom as well. The battery pack should not overhang the back too much, as it may run into the motor controller which will hang off the back of the body.
 
-_Battery pack positioning with front wheel riser, screenshot from vid_
+18_NGns4V_zMAYg9FI1SqnSFjND-s1R_l
+
+18Ungi7RT6A9-nWc5OqpGnNqBDtQ2Qp8Q
 
 Once the battery pack is in the correct position, mark one of the inner two holes and use the hot bolt method to make a hole. It should go all the way through the base.
 
@@ -69,8 +71,43 @@ _Pic of mouse on table_
 
 Attach the motor driver to the back. Use a stand-off, bolt and nut. Push the bolt through the body, then attach the standoff. Finally hang the motor controller off the bolts and secure with nuts.
 
-_Attaching motor controller_
+![](https://drive.google.com/uc?export=view&id=18NLLlD8ht0rcpdyMzZoAGB0ODV9KM1Ru)
+
+![](https://drive.google.com/uc?export=view&id=17mLeJrcFiOVl_M-XIbPsL88aFJMEj-vw)
 
 Plug in the included wires into the motors. Attach the sensors in each of the five positions, follow the order below. Plug in the wires as you go, some of the sensor pins need to be bent to stick strait up. Route the sensor wires to stick out the front and the motor wires to stick out the back. Place the bread board on top of all the components.
 
-_Picture of assembled Mouse_
+17Fi-rjHdZIb5C3Jg2PqRvPqRWXAhXOqN
+
+17F3FA1i6x9JMED1Y3OXcap5f63Rw_okN
+
+16o9N7JyoCyy-S_OGH8LwMPHLG4D9Ll-d
+
+
+
+## Wiring
+
+Below is a wiring diagram for the micromouse. You can use this and route the wires as you see fit. The only error in the wiring diagram is the encoders for teh motors, teh yellow and green wires. The yellow and green should be flipped, the order should go yellow green green yellow.
+
+![](https://drive.google.com/uc?export=view&id=1pzRai8rGGtg09KoscXExky3qvh6skgD5)
+
+First we will run all the voltage and ground wires on the board. Everything shares a common ground. As seen in the picture below, the left power bus runs at 3V provided by the pico, and the right is 5V taken from the motor controller. 
+
+![](https://drive.google.com/uc?export=view&id=16WRvHdAfsYwCEhHNXd14On4lbiXIG5Qp)
+
+Before we place the bread board, we will route the cables like so. The only exception in the purple, green and blue sesnor wires coming out the back. That should be routed with the rest of the sensors out the front. If you decide to twist the wires, make sure to mark which is left and right befor hand. 
+
+![](https://drive.google.com/uc?export=view&id=16TwKRqmR6D-hn6E5z7vDTsoDSE2w402d)
+
+With the bread board in place, run short green and white wires for the SCL and SDA from the BNO055 to pins 20 and 19 respectivly. Next place the encoder wires with the yellow and green fliped from the wiring diagram and the picture below. The right encoder should be pins 1 and 2, and the left encoder pinst 4 and 5. Also plug in the blue and black cables from motors into the 5V rails. 
+
+![](https://drive.google.com/uc?export=view&id=16Qsl-VeQIxkwBld_Qz9MLijhpvSyvk3B)
+
+Next run all the sensor wires. The wiring diagram shows how they should be connected and what order. Run four more wires to connect the motor controller to the pico. Then run the wires to the motor controller. Be careful when unscreing the wire holder, as the screw will strip very easitly. 
+
+![](https://drive.google.com/uc?export=view&id=16F1qy9ZgYmh_aKV9ryn_UTAJyWjUAnvf)
+
+![](https://drive.google.com/uc?export=view&id=166pFO1wkkjoJGEHYvktakMn4yjAlVE-4)
+
+![](https://drive.google.com/uc?export=view&id=16PFqQpktVyI33SfUr6fUxsdJxnkLMPrD)
+   
