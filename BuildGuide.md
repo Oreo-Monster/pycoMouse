@@ -2,6 +2,40 @@
 
 ## Materials and Tools
 
+1 Raspberry Pi Pico
+
+1 Adafruit BNO055
+
+1 Breadboard
+
+2 stepper motors
+
+1 Motor Controller
+
+1 AA battery pack
+
+5 proximety sensors
+
+2 wheels
+
+1 Marble front wheel
+
+Wire
+
+Nuts and Bolts
+
+
+Soddering Iron and Soder
+
+Wire Strippers
+
+Screwdriver
+
+Hot Glue Gun
+
+
+
+
 ## 3D Printing
 
 ## Assembly
