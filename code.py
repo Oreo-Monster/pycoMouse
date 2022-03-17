@@ -112,10 +112,11 @@ def go_forward(dist):
 def turn_left(turnAngle=90, speedFactor=1.0, angleTolerance=2, verbose=False, log=None):
     ''' turns left 90 degrees '''
 
-    global current_heading
+    #We have two cases, if initalAngle > turnAngle, then we want to turn while
+    # angle>target, 
 
-    inital_angle = (magSensor.euler[0] + 180) % 360
-    angle = (magSensor.euler[0] + 180) % 360
+    inital_angle = (magSensor.euler[0]) % 360
+    angle = (magSensor.euler[0]) % 360
     target = (inital_angle - turnAngle) % 360
 
     if verbose:
@@ -125,7 +126,7 @@ def turn_left(turnAngle=90, speedFactor=1.0, angleTolerance=2, verbose=False, lo
             print("Time    Angle    Inital Angle    Target Angle\n")
 
     while not compare_angle(angle, target, angleTolerance):
-        angle = (magSensor.euler[0] + 180) % 360
+        angle = (magSensor.euler[0]) % 360
         if verbose:
             if log is not None:
                 log.write("Turning left: " + str(time.monotonic()) + "    " + str(angle) + "    " + str(inital_angle) + "        " + str(target) + "\n")
@@ -142,7 +143,6 @@ def turn_left(turnAngle=90, speedFactor=1.0, angleTolerance=2, verbose=False, lo
     left_back.duty_cycle = 0
     left_foward.duty_cycle = 0
 
-    current_heading = (current_heading - turnAngle) % 360
 
 def turn_right(turnAngle=90):
     ''' turns left 90 degrees '''
@@ -169,6 +169,29 @@ def turn_right(turnAngle=90):
 
 current_heading = 0 #keeps track of turns, left turns are negative
 
+
+# def turnTo(taget, speedFactor = 1 , tolerance = 10):
+
+#     inital = magSensor.euler[0]
+
+#     calc = inital-taget
+
+#     if calc < 0:
+#         #calc is a right turn
+#         right = abs(calc)
+#         left = 360 - right
+#     elif calc > 0:
+#         #calc is a left turn
+#         right = abs(calc)
+#         left = 360 - right
+#     else:
+#         #calc = 0, no turn needed
+#         return
+
+#     if right < left:
+#         #turn right
+#     else:
+#         #turn left
 
 def turn_test(speedFactor, angleTolerence):
     #We want to test turning left 90 degrees several times
