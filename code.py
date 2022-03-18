@@ -112,24 +112,23 @@ def go_forward(dist):
 def turn_left(turnAngle=90, speedFactor=1.0, angleTolerance=2, verbose=False, log=None):
     ''' turns left 90 degrees '''
 
-    #We have two cases, if initalAngle > turnAngle, then we want to turn while
-    # angle>target, 
 
-    inital_angle = (magSensor.euler[0]) % 360
-    angle = (magSensor.euler[0]) % 360
+    inital_angle = (magSensor.euler[0])
+    angle = (magSensor.euler[0])
     target = (inital_angle - turnAngle) % 360
 
     if verbose:
         if log is not None:
-            log.write("               Time    Angle  Inital Angle  Target Angle\n")
+            log.write("Time,Angle,Inital Angle,Target Angle\n")
         else:
             print("Time    Angle    Inital Angle    Target Angle\n")
 
-    while not compare_angle(angle, target, angleTolerance):
+    while angle > target or angle < inital_angle:
         angle = (magSensor.euler[0]) % 360
         if verbose:
             if log is not None:
                 log.write("Turning left: " + str(time.monotonic()) + "    " + str(angle) + "    " + str(inital_angle) + "        " + str(target) + "\n")
+                log.write(f"{time.monotonic()}, {angle}, {inital_angle}, {target}\n")
             else:
                 print("Turning left: " + str(time.monotonic()) + "    " + str(angle) + "    " + str(inital_angle) + "        " + str(target))
         
@@ -170,28 +169,37 @@ def turn_right(turnAngle=90):
 current_heading = 0 #keeps track of turns, left turns are negative
 
 
-# def turnTo(taget, speedFactor = 1 , tolerance = 10):
+def turnTo(target, speedFactor = 1 , tolerance = 2):
 
-#     inital = magSensor.euler[0]
+    inital = magSensor.euler[0]
 
-#     calc = inital-taget
+    calc = inital-target
 
-#     if calc < 0:
-#         #calc is a right turn
-#         right = abs(calc)
-#         left = 360 - right
-#     elif calc > 0:
-#         #calc is a left turn
-#         right = abs(calc)
-#         left = 360 - right
-#     else:
-#         #calc = 0, no turn needed
-#         return
+    #Calculting the turn angle for left and right turns
+    if calc < 0:
+        #calc is a right turn
+        right = abs(calc)
+        left = 360 - right
+    elif calc > 0:
+        #calc is a left turn
+        right = abs(calc)
+        left = 360 - right
+    else:
+        #calc = 0, no turn needed
+        return
 
-#     if right < left:
-#         #turn right
-#     else:
-#         #turn left
+    if right < left:
+        #turn right
+        turn_right(right, speedFactor)
+    else:
+        #turn left
+        turn_left(left, speedFactor)
+    
+    #Recursive call at slower speed to get even closer to our angle
+    if(not compare_angle(target, magSensor.euler[0]), tolerance):
+        turnTo(target, speedFactor=speedFactor/2, tolerance=tolerance)
+
+    
 
 def turn_test(speedFactor, angleTolerence):
     #We want to test turning left 90 degrees several times
@@ -203,19 +211,18 @@ def turn_test(speedFactor, angleTolerence):
     #16 Turns total
 
     #open log file
-    log_file = open("turn_test.txt", "w")
+    log_file = open("turn_test.csv", "w")
     log_file.write("Turning Test Log File\n")
 
 
     for i in range(16):
         log_file.write("Turn " + str(i) + "\n")
-        log_file.write("----------------------------------\n")
         startTime = time.monotonic()
         turn_left(90, speedFactor, angleTolerence, True, log_file)
         endTime = time.monotonic()
-        log_file.write("Total Turn Time: " + str(endTime - startTime) + "\n")
-        log_file.write("Current Heading: " + str(current_heading) + "\n")
-        log_file.write("Current Angle: " + str(magSensor.euler[0]) + "\n")
+        log_file.write("Total Turn Time:," + str(endTime - startTime) + "\n")
+        log_file.write("Current Heading:," + str(current_heading) + "\n")
+        log_file.write("Current Angle:," + str(magSensor.euler[0]) + "\n")
 
         #Wait for a second before moving on
         time.sleep(1)
