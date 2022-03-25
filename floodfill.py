@@ -141,6 +141,6 @@ def randomWalls(maze):
 
 
 
-randomWalls(maze)
+
 
 print_maze(maze)
