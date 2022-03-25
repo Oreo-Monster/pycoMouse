@@ -1,23 +1,67 @@
 #Implemntation of Flood Fill algorrim for 
 #solving maze
 
-#Storing the maze in a 2D numpy array
-import enum
-import numpy as np
+#Storing the maze in a 2D array
+
+import random
+
+from sympy import comp
 
 height, width = 11, 11
-maze = np.zeros((height, width,2), dtype=int)
 
-#Each cell will store a visited boolean and a distance to target cell
-
-#Fill the maze with distances, where the target in the middle is 0
-for i in range(height):
+def create_maze(height, width):
+    maze = [[[0,0] for x in range(width)] for x in range(height)]
+    for i in range(height):
+        maze[i][0][1] |= 8
+        maze[i][-1][1] |= 2
     for j in range(width):
-        if i == height//2 and j == width//2:
-            maze[i][j][0] = 0
-        else:
-            #calc number of steps to target
-            maze[i][j][0] = abs(i-height//2) + abs(j-width//2)
+        maze[0][j][1] |= 1
+        maze[-1][j][1] |= 4
+            
+    return  maze
+
+
+maze = create_maze(height, width)
+
+
+
+#TODO Make this a function that takes the position of the target
+
+def set_target(maze, target):
+    
+    stack = []
+
+    clear_visited(maze)
+    maze[target[0]][target[1]][0] = 0
+    stack.append(target)
+
+    i_addition = [-1, 0, 1, 0]
+    j_addition = [0, -1, 0, 1]
+    while len(stack) != 0:
+        i, j = stack.pop(-1)
+        for k in range(4):
+            if maze[i][j][1] & 2**k:
+                #Wall
+                continue
+            else:
+                #Open
+                #Checking if the distance is shorter then our current
+                if maze[i+i_addition[k]][j+j_addition[k]][0] > maze[i][j][0]+1:
+                    maze[i+i_addition[k]][j+j_addition[k]][0] = maze[i][j][0]+1
+                #Adding cell to maze if it has not been visited
+                if not maze[i+i_addition[k]][j+j_addition[k]][1] & 16:
+                    stack.append((i+i_addition[k], j+j_addition[k]))
+
+
+#Old code for filling in maze
+# #Fill the maze with distances, where the target in the middle is 0
+# for i in range(height):
+#     for j in range(width):
+#         if i == height//2 and j == width//2:
+#             maze[i][j][0] = 0
+#         else:
+#             #calc number of steps to target
+#             maze[i][j][0] = abs(i-height//2) + abs(j-width//2)
 
 #Walls are represented in maze[i][j][1], with the following code
 #We will conside the first 4 bits of the integer to represent the walls
@@ -62,25 +106,87 @@ def set_visited(maze, i, j):
 def set_unvisited(maze, i, j):
     maze[i][j][1] &= ~16
 
+def clear_visited(maze):
+    for i in range(height):
+        for j in range(width):
+            set_unvisited(maze, i, j)
+
+
+def add_wall(maze, i, j, wall):
+    if wall == "NORTH":
+        maze[i][j][1] |= 1
+    elif wall == "EAST":
+        maze[i][j][1] |= 2
+    elif wall == "SOUTH":
+        maze[i][j][1] |= 4
+    elif wall == "WEST":
+        maze[i][j][1] |= 8
+
 
 #Check for each wall if there is a wall there
 #If not, set a temp distance to the adjecent open cell
 #If there is a wall, set the distance to infinity
 #return the minimum distance
 def get_distance_to_target(maze, i, j):
-    dist = np.array[(4)]
+    dist = []
     i_addition = [-1, 0, 1, 0]
     j_addition = [0, -1, 0, 1]
     for k in range(4):
         if maze[i][j][1] & 2**k:
             #Wall
-            dist[k] = np.inf
+            dist[k] = 10000
         else:
             #Open
             dist[k] = maze[i+i_addition[k]][j+j_addition[k]][0]+1
-    return np.min(dist)
+    return min(dist)
+
+
+
+def walldetect(maze,compmaze, i,j):
+    '''update to detect walls simulation style'''
+    maze[i,j-1,1] |= (compmaze[i,j-1,1] & 2) 
+    maze[i,j+1,1] |= (compmaze[i,j+1,1] & 8) 
+    maze[i+1,j,1] |= (compmaze[i+1,j,1] & 1) 
+    maze[i-1,j,1] |= (compmaze[i-1,j,1] & 4) 
+    maze[i][j][1] = compmaze[i][j][1] 
+    return
+
+
+def getneighbors(i,j,maze):
+    'Will detect walls and return neighbor options'
+    neighbors = []
+    i_addition = [-1, 0, 1, 0]
+    j_addition = [0, -1, 0, 1]
+    for k in range(4):
+        if maze[i][j][1] & 2**k:
+            #Wall
+            continue
+        else:
+            #Open
+            neighbors.append((i+i_addition[k], j+j_addition[k]))
+
+
+    return neighbors
+
+def update(i,j,maze):
+    stack = []
+    stack.append((i,j))
+    while len(stack) != 0:
+        c = stack.pop(-1)
+        n = getneighbors(c[0],c[1],maze)
+        m = n.min()
+        min = 100000
+        for k in n:
+            if maze[k[0]][k[1]][0] < min:
+                min = maze[k[0]][k[1]][0]
+                
+        if m+1 > maze[c[0],c[1],0]:
+            stack.push(n)
+            maze[c[0],c[1],0] = m+1
+
     
     
+    return
 
 
 
@@ -95,7 +201,7 @@ def print_maze(maze):
         BottomLineSTR = ""
         for j in range(width):
             if maze[i][j][1] & 1:
-                ToplineSTR += " ---"
+                ToplineSTR += "----"
             else:
                 ToplineSTR += "    "
 
@@ -116,31 +222,36 @@ def print_maze(maze):
                 BottomLineSTR += " "
             else:
                 BottomLineSTR += ""
+
+            if j == width-1:
+                if maze[i][j][1] & 2:
+                    BottomLineSTR += "|"
         
         print(ToplineSTR)
         print(BottomLineSTR)
+    
+    bottom = "+"
+    for i in range(width):
+        if maze[-1][i][1] & 4:
+            bottom += "----+"
+        else:
+            bottom += "    +"
+    print(bottom)
 
-#Walls are represented in maze[i][j][1], with the following code
-#We will conside the first 4 bits of the integer to represent the walls
-#0 for no wall, 1 for wall
-#first bit is north wall
-#second bit is east wall
-#third bit is south wall
-#fourth bit is west wall
-#This function will place random walls
+
+  
+
 def randomWalls(maze):
     for i in range(height):
         for j in range(width):
-            maze[i][j][1] = np.random.randint(0,16)
+            maze[i][j][1] = random.randint(0,16)
             if i == 0 or i == height-1:
                 maze[i][j][1] |= 1
             if j == 0 or j == width-1:
                 maze[i][j][1] |= 8
-            
 
-
-
-
-
+# set_target(maze, (height//2, width//2))
 
 print_maze(maze)
+
+
