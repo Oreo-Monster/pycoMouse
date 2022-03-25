@@ -116,6 +116,8 @@ def turn_left(turnAngle=90, speedFactor=1.0, verbose=False, log=None):
     inital_angle, angle = magSensor.euler[0], magSensor.euler[0]
     target = (inital_angle - turnAngle) % 360
 
+    start = time.monotonic()
+
     if verbose:
         if log is not None:
             log.write("Turning Left\n")
@@ -123,7 +125,7 @@ def turn_left(turnAngle=90, speedFactor=1.0, verbose=False, log=None):
         else:
             print("Time    Angle    Inital Angle    Target Angle\n")
 
-    while angle > target or angle <= inital_angle:
+    while angle > target or (angle <= inital_angle and inital_angle <  target):
         angle = (magSensor.euler[0]) % 360
         if verbose:
             if log is not None:
@@ -135,6 +137,14 @@ def turn_left(turnAngle=90, speedFactor=1.0, verbose=False, log=None):
         right_foward.duty_cycle = int(65535*speedFactor)
         left_back.duty_cycle = int(60535*speedFactor)
         left_foward.duty_cycle = 0
+
+        if time.monotonic() - start > 3:
+            if verbose:
+                if log is not None:
+                    log.write("Turning left timed out\n")
+                else:
+                    print("Turning left timed out")
+            break
     
     #Turn off all motors
     right_back.duty_cycle = 0
@@ -149,6 +159,8 @@ def turn_right(turnAngle=90, speedFactor=1.0, verbose=False, log=None):
     inital_angle, angle = magSensor.euler[0], magSensor.euler[0]
     target = (inital_angle + turnAngle) % 360
 
+    startTime = time.monotonic()
+
     if verbose:
         if log is not None:
             log.write("Turning Right\n")
@@ -156,18 +168,27 @@ def turn_right(turnAngle=90, speedFactor=1.0, verbose=False, log=None):
         else:
             print("Time    Angle    Inital Angle    Target Angle\n")
 
-    while angle < target or angle >= inital_angle:
+    while angle-2 < target or (angle >= inital_angle and inital_angle > target):
         angle = (magSensor.euler[0]) % 360
         if verbose:
             if log is not None:
                 log.write(f"{time.monotonic()}, {angle}, {inital_angle}, {target}\n")
             else:
-                print("Turning left: " + str(time.monotonic()) + "    " + str(angle) + "    " + str(inital_angle) + "        " + str(target))
+                print("Turning Right: " + str(time.monotonic()) + "    " + str(angle) + "    " + str(inital_angle) + "        " + str(target))
         
         right_back.duty_cycle = int(60535*speedFactor)
         right_foward.duty_cycle = 0
         left_back.duty_cycle = 0
         left_foward.duty_cycle = int(60535*speedFactor)
+
+        if time.monotonic() - startTime > 5:
+            if verbose:
+                if log is not None:
+                    log.write("Turning right timed out\n")
+                else:
+                    print("Turning right timed out")
+            break
+
     
     #Turn off all motors
     right_back.duty_cycle = 0
@@ -203,7 +224,7 @@ def turnTo(target, speedFactor = 1 , tolerance = 2, verbose = False, log = None)
     
     #Recursive call at slower speed to get even closer to our angle
     if(not compare_angle(target, magSensor.euler[0]), tolerance):
-        turnTo(target, speedFactor/2, tolerance, verbose, log)
+        turnTo(target, 0.55, tolerance, verbose, log)
 
     
 
@@ -217,17 +238,16 @@ def turn_test(speedFactor, angleTolerence):
     #16 Turns total
 
     #open log file
-    log_file = open("turn_test.csv", "w")
+    log_file = open("turn_test.csv", "a")
     log_file.write("Turning Test Log File\n")
 
 
-    for i in range(16):
+    for i in range(8):
         log_file.write("Turn " + str(i) + "\n")
         startTime = time.monotonic()
-        turnTo(magSensor.euler[0]-90, speedFactor, angleTolerence, True, log_file)
+        turnTo((magSensor.euler[0]-90)%360, speedFactor, angleTolerence,True, log_file)
         endTime = time.monotonic()
         log_file.write("Total Turn Time:," + str(endTime - startTime) + "\n")
-        log_file.write("Current Heading:," + str(current_heading) + "\n")
         log_file.write("Current Angle:," + str(magSensor.euler[0]) + "\n")
 
         #Wait for a second before moving on
