@@ -3,7 +3,10 @@
 
 #Storing the maze in a 2D array
 
+
 height, width = 11, 11
+wallDictionary = {'NORTH':1, 'EAST':2, 'SOUTH':4, 'WEST':8}
+
 
 def create_maze(height, width):
     maze = [[[0,0] for x in range(width)] for x in range(height)]
@@ -77,13 +80,30 @@ Wall can be a list of walls as well
 '''
 def add_wall(maze, cell, wall):
     i, j = cell
-    wallDictionary = {'NORTH':1, 'EAST':2, 'SOUTH':4, 'WEST':8}
+    
     if isinstance(wall, list):
         for w in wall:
             maze[i][j][1] |= wallDictionary[w]
+            add_wall_neighbor(maze, cell, w)
     else:
         maze[i][j][1] |= wallDictionary[wall]
+        add_wall_neighbor(maze, cell, wall)
 
+
+def add_wall_neighbor(maze, cell, wall):
+    i, j = cell
+    try:
+        if wall == "NORTH":
+            maze[i-1][j][1] |= 4
+        elif wall == "SOUTH":
+            maze[i+1][j][1] |= 1
+        elif wall == "EAST":
+            maze[i][j+1][1] |= 8
+        elif wall == "WEST":
+            maze[i][j-1][1] |= 2
+    except IndexError:
+        pass
+    
 
 
 '''
@@ -118,14 +138,6 @@ def set_target(maze, target):
                 #Then set the distance to the current cell + 1, and add neighbor to stack
                 set_distance(maze, neighbor, minDist)
                 stack.append(neighbor)
-        
-
-
-
-
-        
-
-
 
 '''
 Finds the minimum distance in negihbors of the given cell
@@ -137,30 +149,43 @@ cell: the cell to find the minimum distance negihbors of (tuple of indecies)
 Returns:
 The minimum distance in neighbors of the given cell, and a list of the neighbors
 '''
-def get_min_neighbors(maze, cell):
+def get_min_neighbors(maze, cell, ignoreVisited=False):
     i, j = cell
-    dist = []
     neighbors = []
+    min_dist = 10000
+    direction = -1
     i_addition = [-1, 0, 1, 0]
-    j_addition = [0, -1, 0, 1]
+    j_addition = [0, 1, 0, -1]
     for k in range(4):
         if maze[i][j][1] & 2**k:
             #Wall
             continue
         else:
             #Open
-            dist.append( maze[i+i_addition[k]][j+j_addition[k]][0])
-            neighbors.append((i+i_addition[k], j+j_addition[k]))
-    return min(dist), neighbors
+            if ignoreVisited and maze[i+i_addition[k]][j+j_addition[k]][1] & 16:
+                #Visited
+                continue
+            if maze[i+i_addition[k]][j+j_addition[k]][0] < min_dist:
+                min_dist = maze[i+i_addition[k]][j+j_addition[k]][0]
+                direction = k
+                neighbors.append((i+i_addition[k], j+j_addition[k]))
+    return min_dist, direction, neighbors
 
 
 
-def walldetect(maze,compmaze, i,j):
+def walldetect(maze,compmaze, pos):
     '''update to detect walls simulation style'''
-    maze[i,j-1,1] |= (compmaze[i,j-1,1] & 2) 
-    maze[i,j+1,1] |= (compmaze[i,j+1,1] & 8) 
-    maze[i+1,j,1] |= (compmaze[i+1,j,1] & 1) 
-    maze[i-1,j,1] |= (compmaze[i-1,j,1] & 4) 
+    i,j=pos
+    i_add = [1,0,-1,0]
+    j_add = [0,-1,0,1]
+    for k in range(4):
+        if i+i_add[k]<0 or i+i_add[k]>=height or j+j_add[k]<0 or j+j_add[k]>=width:
+            continue
+        maze[i+i_add[k]][j+j_add[k]][1] |= (compmaze[i+i_add[k]][j+j_add[k]][1] & 2**k)
+    # maze[i][j-1][1] |= (compmaze[i][j-1][1] & 2) 
+    # maze[i][j+1][1] |= (compmaze[i][j+1][1] & 8) 
+    # maze[i+1][j][1] |= (compmaze[i+1][j][1] & 1) 
+    # maze[i-1][j][1] |= (compmaze[i-1][j][1] & 4) 
     maze[i][j][1] = compmaze[i][j][1] 
     return
 
@@ -199,7 +224,8 @@ def update(cell,maze):
     stack.append(cell)
     while len(stack) != 0:
         currentCell = stack.pop(-1)
-        minDist, neighbors = get_min_neighbors(maze, currentCell)
+        minDist, _, neighbors = get_min_neighbors(maze, currentCell)
+        print(f"minDist of cell {currentCell}: {minDist}")
         if minDist+1 < get_distance(maze, currentCell):
             set_distance(maze, currentCell, minDist+1)
             stack.extend(neighbors)
@@ -213,7 +239,7 @@ def update(cell,maze):
 #There will be a + at each corner of cell
 #Walls will be represented by a | or ---
 #The distance to the target will be printed in the cell
-def print_maze(maze):
+def print_maze(maze, pos=(-1,-1)):
     for i in range(height):
         ToplineSTR = "+"
         BottomLineSTR = ""
@@ -225,9 +251,14 @@ def print_maze(maze):
 
             ToplineSTR  += "+"
             if maze[i][j][1] & 8:
-                BottomLineSTR += "| "
+                BottomLineSTR += "|"
             else:
-                BottomLineSTR += "  "
+                BottomLineSTR += " "
+
+            if (i,j) == pos:
+                BottomLineSTR += "^"
+            else:
+                BottomLineSTR += " "
             
             BottomLineSTR += str(maze[i][j][0])
 
@@ -256,14 +287,77 @@ def print_maze(maze):
             bottom += "    +"
     print(bottom)
 
+def read_maze(maze, filename):
+    '''
+    Reads a maze from a text file
+    Returns a maze
+    '''
+    with open(filename) as f:
+        for line in f:
+            line = line.split(",")
+            add_wall(maze, (int(line[0].strip()), int(line[1].strip())), line[2].strip())
+
+
+def backtrack(maze, pos, path):
+    neighbors = []
+    i_addition = [-1, 0, 1, 0]
+    j_addition = [0, 1, 0, -1]
+    while len(neighbors) == 0:
+        direction = path.pop(-1)
+        pos = (pos[0]-i_addition[direction], pos[1]-j_addition[direction])
+        minDist, new_direction, neighbors = get_min_neighbors(maze, pos, ignoreVisited=True)
+        print_maze(maze, pos)
+        print(pos)
+        print("backtracking")
+        input()
+    print("finished backtracking, new direction is: ", new_direction)
+    return new_direction, pos
+
+
+def floodfill():
+    i_addition = [-1, 0, 1, 0]
+    j_addition = [0, 1, 0, -1]
+
+    solution = create_maze(height, width)
+    read_maze(solution, "maze1.txt")
+    print_maze(solution)
+
+    maze = create_maze(height, width)
+    target = (height-1, width-1)
+    set_target(maze, target)
+    pos = (0,0)
+
+    path = []
+
+    while pos != target:
+        #Read walls at current position from solution
+        walldetect(maze, solution, pos)
+
+        #set current position to visited
+        set_visited(maze, pos)
+
+        #Update the maze to reflect the walls of the current cell
+        update(pos, maze)
+        #Find the next cell to move to
+        minDist, direction, neighbors = get_min_neighbors(maze, pos, ignoreVisited=True)
+
+        if len(neighbors) == 0:
+            direction, pos = backtrack(maze, pos, path)
+
+        #Move to the next cell
+        pos = (pos[0]+i_addition[direction], pos[1]+j_addition[direction])
+        #add direction to path
+        path.append(direction)
+        print_maze(maze, pos)
+        print(pos)
+        input()
+
+
+
+
 
 
 if __name__ == "__main__":
 
-    maze = create_maze(height, width)
-
-    set_target(maze, (height//2, width//2))
-
-    print_maze(maze)
-
+    floodfill()
 
