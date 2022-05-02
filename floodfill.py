@@ -10,6 +10,7 @@ wallDictionary = {'NORTH':1, 'EAST':2, 'SOUTH':4, 'WEST':8}
 
 def create_maze(height, width):
     maze = [[[0,0] for x in range(width)] for x in range(height)]
+    #Adding walls around the maze
     for i in range(height):
         maze[i][0][1] |= 8
         maze[i][-1][1] |= 2
@@ -89,21 +90,19 @@ def add_wall(maze, cell, wall):
         maze[i][j][1] |= wallDictionary[wall]
         add_wall_neighbor(maze, cell, wall)
 
-
+#Helper function to make sure walls are added correctly
 def add_wall_neighbor(maze, cell, wall):
     i, j = cell
-    try:
-        if wall == "NORTH":
-            maze[i-1][j][1] |= 4
-        elif wall == "SOUTH":
-            maze[i+1][j][1] |= 1
-        elif wall == "EAST":
-            maze[i][j+1][1] |= 8
-        elif wall == "WEST":
-            maze[i][j-1][1] |= 2
-    except IndexError:
-        pass
-    
+
+    if wall == "NORTH":
+        maze[i-1][j][1] |= 4
+    elif wall == "SOUTH":
+        maze[i+1][j][1] |= 1
+    elif wall == "EAST":
+        maze[i][j+1][1] |= 8
+    elif wall == "WEST":
+        maze[i][j-1][1] |= 2
+
 
 
 '''
@@ -145,9 +144,13 @@ Finds the minimum distance in negihbors of the given cell
 Parameters:
 maze: the maze
 cell: the cell to find the minimum distance negihbors of (tuple of indecies)
+ignoreVisited: if true, will ignore cells that have been visited
 
 Returns:
-The minimum distance in neighbors of the given cell, and a list of the neighbors
+The minimum distance of the neighboring cells,
+the direction of the minimum distance, returned as an int
+0 for north, 1 for east, 2 for south, 3 for west
+These ints can be used in i_addition and j_addition
 '''
 def get_min_neighbors(maze, cell, ignoreVisited=False):
     i, j = cell
@@ -156,6 +159,7 @@ def get_min_neighbors(maze, cell, ignoreVisited=False):
     direction = -1
     i_addition = [-1, 0, 1, 0]
     j_addition = [0, 1, 0, -1]
+    tied_cells = [] #List of cells with the same distance as the minimum distance
     for k in range(4):
         if maze[i][j][1] & 2**k:
             #Wall
@@ -165,11 +169,18 @@ def get_min_neighbors(maze, cell, ignoreVisited=False):
             if ignoreVisited and maze[i+i_addition[k]][j+j_addition[k]][1] & 16:
                 #Visited
                 continue
-            if maze[i+i_addition[k]][j+j_addition[k]][0] < min_dist:
+            else:
+                neighbors.append((i+i_addition[k], j+j_addition[k]))
+
+            if maze[i+i_addition[k]][j+j_addition[k]][0] < min_dist: #new minimum distance
                 min_dist = maze[i+i_addition[k]][j+j_addition[k]][0]
                 direction = k
-                neighbors.append((i+i_addition[k], j+j_addition[k]))
-    return min_dist, direction, neighbors
+                tied_cells = []
+            if maze[i+i_addition[k]][j+j_addition[k]][0] == min_dist:
+                #Same distance
+                tied_cells.append((i+i_addition[k], j+j_addition[k]))
+
+    return min_dist, direction, neighbors, tied_cells
 
 
 
@@ -178,16 +189,15 @@ def walldetect(maze,compmaze, pos):
     i,j=pos
     i_add = [1,0,-1,0]
     j_add = [0,-1,0,1]
+    # Adding apropiate walls to surrounding cells
     for k in range(4):
+        #Make sure we dont go over the edge
         if i+i_add[k]<0 or i+i_add[k]>=height or j+j_add[k]<0 or j+j_add[k]>=width:
             continue
         maze[i+i_add[k]][j+j_add[k]][1] |= (compmaze[i+i_add[k]][j+j_add[k]][1] & 2**k)
-    # maze[i][j-1][1] |= (compmaze[i][j-1][1] & 2) 
-    # maze[i][j+1][1] |= (compmaze[i][j+1][1] & 8) 
-    # maze[i+1][j][1] |= (compmaze[i+1][j][1] & 1) 
-    # maze[i-1][j][1] |= (compmaze[i-1][j][1] & 4) 
+    #Setting wall for current cell
     maze[i][j][1] = compmaze[i][j][1] 
-    return
+
 
 
 def get_neighbors(maze, cell):
@@ -224,8 +234,7 @@ def update(cell,maze):
     stack.append(cell)
     while len(stack) != 0:
         currentCell = stack.pop(-1)
-        minDist, _, neighbors = get_min_neighbors(maze, currentCell)
-        print(f"minDist of cell {currentCell}: {minDist}")
+        minDist, _, neighbors, _ = get_min_neighbors(maze, currentCell)
         if minDist+1 < get_distance(maze, currentCell):
             set_distance(maze, currentCell, minDist+1)
             stack.extend(neighbors)
@@ -299,35 +308,31 @@ def read_maze(maze, filename):
 
 
 def backtrack(maze, pos, path):
+    if len(path) == 0:
+        return None, pos, None
     neighbors = []
     i_addition = [-1, 0, 1, 0]
     j_addition = [0, 1, 0, -1]
-    while len(neighbors) == 0:
+    while len(neighbors) == 0 and len(path) != 0:
         direction = path.pop(-1)
         pos = (pos[0]-i_addition[direction], pos[1]-j_addition[direction])
-        minDist, new_direction, neighbors = get_min_neighbors(maze, pos, ignoreVisited=True)
+        minDist, new_direction, neighbors, tied_cell = get_min_neighbors(maze, pos, ignoreVisited=True)
         print_maze(maze, pos)
         print(pos)
         print("backtracking")
         input()
-    print("finished backtracking, new direction is: ", new_direction)
-    return new_direction, pos
+    
+    return new_direction, pos, tied_cell
 
 
-def floodfill():
+def floodfill(maze, solution, pos, target):
     i_addition = [-1, 0, 1, 0]
     j_addition = [0, 1, 0, -1]
 
-    solution = create_maze(height, width)
-    read_maze(solution, "maze1.txt")
-    print_maze(solution)
-
-    maze = create_maze(height, width)
-    target = (height-1, width-1)
     set_target(maze, target)
-    pos = (0,0)
-
+    
     path = []
+    unexplored = []
 
     while pos != target:
         #Read walls at current position from solution
@@ -339,25 +344,60 @@ def floodfill():
         #Update the maze to reflect the walls of the current cell
         update(pos, maze)
         #Find the next cell to move to
-        minDist, direction, neighbors = get_min_neighbors(maze, pos, ignoreVisited=True)
+        _, direction, neighbors, tied_cells = get_min_neighbors(maze, pos, ignoreVisited=True)
 
         if len(neighbors) == 0:
-            direction, pos = backtrack(maze, pos, path)
+            direction, pos, tied_cells = backtrack(maze, pos, path)
+            if len(path) == 0: #If we cant go back, we are done
+                break
+
+        unexplored.extend(tied_cells) #cells that may lead to better path
 
         #Move to the next cell
         pos = (pos[0]+i_addition[direction], pos[1]+j_addition[direction])
         #add direction to path
         path.append(direction)
         print_maze(maze, pos)
-        print(pos)
         input()
 
+    return pos, unexplored
 
 
+def move_to_target(maze, pos, target):
+    i_addition = [-1, 0, 1, 0]
+    j_addition = [0, 1, 0, -1]
+    set_target(maze, target)
+    while pos != target:
+
+        _, direction, _, _ = get_min_neighbors(maze, pos, ignoreVisited=False)
+
+        pos = (pos[0]+i_addition[direction], pos[1]+j_addition[direction])
+
+        print_maze(maze, pos)
+        input()
+    return pos
 
 
 
 if __name__ == "__main__":
 
-    floodfill()
+    solution = create_maze(height, width)
+    read_maze(solution, "maze1.txt")
+
+    maze = create_maze(height, width)
+    target = (height-1, width-1)
+
+    pos = (0,0)
+
+    pos, unexplored = floodfill(maze, solution, pos, target)
+
+    while unexplored != []:
+        #Get to unexplored cell
+        current_cell = unexplored.pop(0)
+        _, direction, neighbors, tied_cells = get_min_neighbors(maze, current_cell, ignoreVisited=True)
+        if len(neighbors) != 0:
+            pos = move_to_target(maze, pos, current_cell)
+            pos, tmp = floodfill(maze, solution, pos, target)
+            unexplored.extend(tmp)
+
 
