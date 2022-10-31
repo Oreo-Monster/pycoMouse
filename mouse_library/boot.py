@@ -6,8 +6,6 @@ import board
 import digitalio
 import storage
 
-print("hello")
-
 write_pin = digitalio.DigitalInOut(board.GP16)
 write_pin.direction = digitalio.Direction.INPUT
 write_pin.pull = digitalio.Pull.UP

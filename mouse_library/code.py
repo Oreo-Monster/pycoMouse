@@ -255,15 +255,6 @@ def turn_test(speedFactor, angleTolerence):
 
     log_file.close()
 
-#turn_test(1.0, 2)
 
-
-for i in range(8):
-    turn_left()
-    time.sleep(1)
-
-for i in range(8):
-    turn_right()
-    time.sleep(1)
 
 
