@@ -1,49 +1,8 @@
+from time import sleep
+from maze import *
+
 #Implemntation of Flood Fill algorrim for 
 #solving maze
-
-#Storing the maze in a 2D array
-
-
-height, width = 11, 11
-wallDictionary = {'NORTH':1, 'EAST':2, 'SOUTH':4, 'WEST':8}
-
-
-def create_maze(height, width):
-    maze = [[[0,0] for x in range(width)] for x in range(height)]
-    #Adding walls around the maze
-    for i in range(height):
-        maze[i][0][1] |= 8
-        maze[i][-1][1] |= 2
-    for j in range(width):
-        maze[0][j][1] |= 1
-        maze[-1][j][1] |= 4
-            
-    return  maze
-
-#Walls are represented in maze[i][j][1], with the following code
-#We will conside the first 4 bits of the integer to represent the walls
-#0 for no wall, 1 for wall
-#first bit is north wall
-#second bit is east wall
-#third bit is south wall
-#fourth bit is west wall
-#Use bit operations to add walls
-#For example, if we want to add a wall to the north wall, we can do
-#maze[i][j][1] |= 1
-#Another example, adding a wall to the west
-#maze[i][j][1] |= 8
-#This function will decode the wall information and return a list of walls
-#If no walls return []
-#If wall to north or south, return [NORTH, SOUTH]
-
-def decode_walls(maze, cell):
-    i, j = cell
-    walls = []
-    decode = ["NORTH", "EAST", "SOUTH", "WEST"]
-    for k in range(4):
-        if maze[i][j][1] & 2**k:
-            walls.append(decode[k])
-    return walls
 
 #The fifth bit is the visited boolean
 #If the cell has been visited, set to 1
@@ -68,41 +27,6 @@ def clear_visited(maze):
     for i in range(height):
         for j in range(width):
             set_unvisited(maze, (i, j))
-
-
-'''
-Adds wall(s) to the given cell
-
-Parameters:
-maze: the maze
-cell: the cell to add the wall to (tuple of indecies)
-wall: the wall to add (string, NORTH, SOUTH, EAST, WEST)
-Wall can be a list of walls as well
-'''
-def add_wall(maze, cell, wall):
-    i, j = cell
-    
-    if isinstance(wall, list):
-        for w in wall:
-            maze[i][j][1] |= wallDictionary[w]
-            add_wall_neighbor(maze, cell, w)
-    else:
-        maze[i][j][1] |= wallDictionary[wall]
-        add_wall_neighbor(maze, cell, wall)
-
-#Helper function to make sure walls are added correctly
-def add_wall_neighbor(maze, cell, wall):
-    i, j = cell
-
-    if wall == "NORTH":
-        maze[i-1][j][1] |= 4
-    elif wall == "SOUTH":
-        maze[i+1][j][1] |= 1
-    elif wall == "EAST":
-        maze[i][j+1][1] |= 8
-    elif wall == "WEST":
-        maze[i][j-1][1] |= 2
-
 
 
 '''
@@ -241,72 +165,6 @@ def update(cell,maze):
 
     return
 
-
-
-
-#funtion for printing out maze with distances and walls
-#There will be a + at each corner of cell
-#Walls will be represented by a | or ---
-#The distance to the target will be printed in the cell
-def print_maze(maze, pos=(-1,-1)):
-    for i in range(height):
-        ToplineSTR = "+"
-        BottomLineSTR = ""
-        for j in range(width):
-            if maze[i][j][1] & 1:
-                ToplineSTR += "----"
-            else:
-                ToplineSTR += "    "
-
-            ToplineSTR  += "+"
-            if maze[i][j][1] & 8:
-                BottomLineSTR += "|"
-            else:
-                BottomLineSTR += " "
-
-            if (i,j) == pos:
-                BottomLineSTR += "^"
-            else:
-                BottomLineSTR += " "
-            
-            BottomLineSTR += str(maze[i][j][0])
-
-            if maze[i][j][1] & 16:
-                BottomLineSTR += "*"
-            else:
-                BottomLineSTR += " "
-
-            if maze[i][j][0] < 10:
-                BottomLineSTR += " "
-            else:
-                BottomLineSTR += ""
-
-            if j == width-1:
-                if maze[i][j][1] & 2:
-                    BottomLineSTR += "|"
-        
-        print(ToplineSTR)
-        print(BottomLineSTR)
-    
-    bottom = "+"
-    for i in range(width):
-        if maze[-1][i][1] & 4:
-            bottom += "----+"
-        else:
-            bottom += "    +"
-    print(bottom)
-
-def read_maze(maze, filename):
-    '''
-    Reads a maze from a text file
-    Returns a maze
-    '''
-    with open(filename) as f:
-        for line in f:
-            line = line.split(",")
-            add_wall(maze, (int(line[0].strip()), int(line[1].strip())), line[2].strip())
-
-
 def backtrack(maze, pos, path):
     if len(path) == 0:
         return None, pos, None
@@ -318,9 +176,7 @@ def backtrack(maze, pos, path):
         pos = (pos[0]-i_addition[direction], pos[1]-j_addition[direction])
         minDist, new_direction, neighbors, tied_cell = get_min_neighbors(maze, pos, ignoreVisited=True)
         print_maze(maze, pos)
-        print(pos)
-        print("backtracking")
-        input()
+        sleep(1)
     
     return new_direction, pos, tied_cell
 
@@ -358,7 +214,7 @@ def floodfill(maze, solution, pos, target):
         #add direction to path
         path.append(direction)
         print_maze(maze, pos)
-        input()
+        sleep(1)
 
     return pos, unexplored
 
@@ -374,7 +230,7 @@ def move_to_target(maze, pos, target):
         pos = (pos[0]+i_addition[direction], pos[1]+j_addition[direction])
 
         print_maze(maze, pos)
-        input()
+        sleep(1)
     return pos
 
 
