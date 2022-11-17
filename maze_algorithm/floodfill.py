@@ -74,35 +74,36 @@ Returns:
 The minimum distance of the neighboring cells,
 the direction of the minimum distance, returned as an int
 0 for north, 1 for east, 2 for south, 3 for west
-These ints can be used in i_addition and j_addition
+These ints can be used in row_cells and col_cells
 '''
 def get_min_neighbors(maze, cell, ignoreVisited=False):
     i, j = cell
     neighbors = []
     min_dist = 10000
     direction = -1
-    i_addition = [-1, 0, 1, 0]
-    j_addition = [0, 1, 0, -1]
+    row_cells = [-1, 0, 1, 0]
+    col_cells = [0, 1, 0, -1]
     tied_cells = [] #List of cells with the same distance as the minimum distance
+    
     for k in range(4):
         if maze[i][j]["walls"] & 2**k:
             #Wall
             continue
         else:
             #Open
-            if ignoreVisited and maze[i+i_addition[k]][j+j_addition[k]]["visited"]:
+            if ignoreVisited and maze[i+row_cells[k]][j+col_cells[k]]["visited"]:
                 #Visited
                 continue
             else:
-                neighbors.append((i+i_addition[k], j+j_addition[k]))
+                neighbors.append((i+row_cells[k], j+col_cells[k]))
 
-            if maze[i+i_addition[k]][j+j_addition[k]]["distance"] < min_dist: #new minimum distance
-                min_dist = maze[i+i_addition[k]][j+j_addition[k]]["distance"]
+            if maze[i+row_cells[k]][j+col_cells[k]]["distance"] < min_dist: #new minimum distance
+                min_dist = maze[i+row_cells[k]][j+col_cells[k]]["distance"]
                 direction = k
                 tied_cells = []
-            if maze[i+i_addition[k]][j+j_addition[k]]["distance"] == min_dist:
+            if maze[i+row_cells[k]][j+col_cells[k]]["distance"] == min_dist:
                 #Same distance
-                tied_cells.append((i+i_addition[k], j+j_addition[k]))
+                tied_cells.append((i+row_cells[k], j+col_cells[k]))
 
     return min_dist, direction, neighbors, tied_cells
 
@@ -133,15 +134,15 @@ def get_neighbors(maze, cell):
     '''
     i, j = cell
     neighbors = []
-    i_addition = [-1, 0, 1, 0]
-    j_addition = [0, 1, 0, -1]
+    row_cells = [-1, 0, 1, 0]
+    col_cells = [0, 1, 0, -1]
     for k in range(4):
         if maze[i][j]["walls"] & 2**k:
             #Wall
             continue
         else:
             #Open
-            neighbors.append((i+i_addition[k], j+j_addition[k]))
+            neighbors.append((i+row_cells[k], j+col_cells[k]))
 
     return neighbors
 
@@ -169,13 +170,13 @@ def backtrack(maze, pos, path):
     if len(path) == 0:
         return None, pos, None
     neighbors = []
-    i_addition = [-1, 0, 1, 0]
-    j_addition = [0, 1, 0, -1]
+    row_cells = [-1, 0, 1, 0]
+    col_cells = [0, 1, 0, -1]
     while len(neighbors) == 0 and len(path) != 0:
         direction = path.pop(-1)
         
         i, j = pos
-        pos = (i-i_addition[direction], j-j_addition[direction])
+        pos = (i-row_cells[direction], j-col_cells[direction])
         minDist, new_direction, neighbors, tied_cell = get_min_neighbors(maze, pos, ignoreVisited=True)
         print_maze(maze, pos)
         sleep(0.5)
@@ -184,8 +185,8 @@ def backtrack(maze, pos, path):
 
 
 def floodfill(maze, solution, pos, target):
-    i_addition = [-1, 0, 1, 0]
-    j_addition = [0, 1, 0, -1]
+    row_cells = [-1, 0, 1, 0]
+    col_cells = [0, 1, 0, -1]
 
     set_target(maze, target)
     
@@ -213,7 +214,7 @@ def floodfill(maze, solution, pos, target):
 
         #Move to the next cell
         i, j = pos
-        pos = (i+i_addition[direction], j+j_addition[direction])
+        pos = (i+row_cells[direction], j+col_cells[direction])
         #add direction to path
         path.append(direction)
         print_maze(maze, pos)
@@ -223,14 +224,14 @@ def floodfill(maze, solution, pos, target):
 
 
 def move_to_target(maze, pos, target):
-    i_addition = [-1, 0, 1, 0]
-    j_addition = [0, 1, 0, -1]
+    row_cells = [-1, 0, 1, 0]
+    col_cells = [0, 1, 0, -1]
     set_target(maze, target)
     while pos != target:
 
         _, direction, _, _ = get_min_neighbors(maze, pos, ignoreVisited=False)
         i, j = pos
-        pos = (i+i_addition[direction], j+j_addition[direction])
+        pos = (i+row_cells[direction], j+col_cells[direction])
 
         print_maze(maze, pos)
         sleep(0.5)
