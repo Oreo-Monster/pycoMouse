@@ -39,11 +39,11 @@ target: tuple indecies of the target cell
 '''
 def set_target(maze, target):
     #Setting all cells to have large distance
-    i, j = target
     for i in range(height):
         for j in range(width):
-            maze[i][j]["distance"] = 10000
+            maze[i][j]["distance"] = 5000
 
+    i, j = target
     #Setting the target cell to have distance 0
     maze[i][j]["distance"] = 0
     #Starting the stack, will hold tuples of indecies of cells
