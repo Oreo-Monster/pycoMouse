@@ -1,27 +1,26 @@
 from time import sleep
 from maze import *
 
-#Implemntation of Flood Fill algorrim for 
+#Implementation of Flood Fill algorithm for 
 #solving maze
 
-#The fifth bit is the visited boolean
-#If the cell has been visited, set to 1
-#If the cell has not been visited, set to 0
-#This function will set the visited boolean to 1
+#This function will set visited to true
 def set_visited(maze, cell):
     i, j = cell
-    maze[i][j][1] |= 16
+    maze[i][j]["visited"] = True
 
-#This function will set cell to not visited
+#This function will set visited to false
 def set_unvisited(maze, cell):
     i, j = cell
-    maze[i][j][1] &= ~16
+    maze[i][j]["visited"] = False
 
 def set_distance(maze, cell, dist):
-    maze[cell[0]][cell[1]][0] = dist
+    i, j = cell
+    maze[i][j]["distance"] = dist
 
 def get_distance(maze, cell):
-    return maze[cell[0]][cell[1]][0]
+    i, j = cell
+    return maze[i][j]["distance"]
 
 def clear_visited(maze):
     for i in range(height):
@@ -40,12 +39,13 @@ target: tuple indecies of the target cell
 '''
 def set_target(maze, target):
     #Setting all cells to have large distance
+    i, j = target
     for i in range(height):
         for j in range(width):
-            maze[i][j][0] = 10000
+            maze[i][j]["distance"] = 10000
 
     #Setting the target cell to have distance 0
-    maze[target[0]][target[1]][0] = 0
+    maze[i][j]["distance"] = 0
     #Starting the stack, will hold tuples of indecies of cells
     stack = []
     stack.append(target)
@@ -85,22 +85,22 @@ def get_min_neighbors(maze, cell, ignoreVisited=False):
     j_addition = [0, 1, 0, -1]
     tied_cells = [] #List of cells with the same distance as the minimum distance
     for k in range(4):
-        if maze[i][j][1] & 2**k:
+        if maze[i][j]["walls"] & 2**k:
             #Wall
             continue
         else:
             #Open
-            if ignoreVisited and maze[i+i_addition[k]][j+j_addition[k]][1] & 16:
+            if ignoreVisited and maze[i+i_addition[k]][j+j_addition[k]]["visited"]:
                 #Visited
                 continue
             else:
                 neighbors.append((i+i_addition[k], j+j_addition[k]))
 
-            if maze[i+i_addition[k]][j+j_addition[k]][0] < min_dist: #new minimum distance
-                min_dist = maze[i+i_addition[k]][j+j_addition[k]][0]
+            if maze[i+i_addition[k]][j+j_addition[k]]["distance"] < min_dist: #new minimum distance
+                min_dist = maze[i+i_addition[k]][j+j_addition[k]]["distance"]
                 direction = k
                 tied_cells = []
-            if maze[i+i_addition[k]][j+j_addition[k]][0] == min_dist:
+            if maze[i+i_addition[k]][j+j_addition[k]]["distance"] == min_dist:
                 #Same distance
                 tied_cells.append((i+i_addition[k], j+j_addition[k]))
 
@@ -118,9 +118,9 @@ def walldetect(maze,compmaze, pos):
         #Make sure we dont go over the edge
         if i+i_add[k]<0 or i+i_add[k]>=height or j+j_add[k]<0 or j+j_add[k]>=width:
             continue
-        maze[i+i_add[k]][j+j_add[k]][1] |= (compmaze[i+i_add[k]][j+j_add[k]][1] & 2**k)
+        maze[i+i_add[k]][j+j_add[k]]["walls"] |= (compmaze[i+i_add[k]][j+j_add[k]]["walls"] & 2**k)
     #Setting wall for current cell
-    maze[i][j][1] = compmaze[i][j][1] 
+    maze[i][j]["walls"] = compmaze[i][j]["walls"] 
 
 
 
@@ -136,7 +136,7 @@ def get_neighbors(maze, cell):
     i_addition = [-1, 0, 1, 0]
     j_addition = [0, 1, 0, -1]
     for k in range(4):
-        if maze[i][j][1] & 2**k:
+        if maze[i][j]["walls"] & 2**k:
             #Wall
             continue
         else:
@@ -173,10 +173,12 @@ def backtrack(maze, pos, path):
     j_addition = [0, 1, 0, -1]
     while len(neighbors) == 0 and len(path) != 0:
         direction = path.pop(-1)
-        pos = (pos[0]-i_addition[direction], pos[1]-j_addition[direction])
+        
+        i, j = pos
+        pos = (i-i_addition[direction], j-j_addition[direction])
         minDist, new_direction, neighbors, tied_cell = get_min_neighbors(maze, pos, ignoreVisited=True)
         print_maze(maze, pos)
-        sleep(1)
+        sleep(0.5)
     
     return new_direction, pos, tied_cell
 
@@ -210,11 +212,12 @@ def floodfill(maze, solution, pos, target):
         unexplored.extend(tied_cells) #cells that may lead to better path
 
         #Move to the next cell
-        pos = (pos[0]+i_addition[direction], pos[1]+j_addition[direction])
+        i, j = pos
+        pos = (i+i_addition[direction], j+j_addition[direction])
         #add direction to path
         path.append(direction)
         print_maze(maze, pos)
-        sleep(1)
+        sleep(0.5)
 
     return pos, unexplored
 
@@ -226,11 +229,11 @@ def move_to_target(maze, pos, target):
     while pos != target:
 
         _, direction, _, _ = get_min_neighbors(maze, pos, ignoreVisited=False)
-
-        pos = (pos[0]+i_addition[direction], pos[1]+j_addition[direction])
+        i, j = pos
+        pos = (i+i_addition[direction], j+j_addition[direction])
 
         print_maze(maze, pos)
-        sleep(1)
+        sleep(0.5)
     return pos
 
 
