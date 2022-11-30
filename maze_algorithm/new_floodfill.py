@@ -39,38 +39,55 @@ def create_target_squares():
 def set_target_squares(maze, target_squares):
     for targetCell in target_squares:
         i, j = targetCell
-        maze[i][j] = 0
+        maze[i][j]["distance"] = 0
+        
+        
+def create_stack_with_targets(target_squares):
+    stack = []
+    for targetCell in target_squares:
+        stack.append(targetCell)
+    return stack
 
 
 def set_cell_distances(maze):
+    '''
+    Sets the target cell to have distance 0
+    and recalculates the distance for every other
+    cell in the maze, taking into account walls
+
+    Parameters:
+    maze: the maze
+    target: tuple indecies of the target cell
+    '''
+    #Setting all cells to have large distance
     for i in range(height):
         for j in range(width):
-            maze[i][j]["distance"] = 400
+            maze[i][j]["distance"] = 5000
 
+    # Creating target squares of the maze
     target_squares = create_target_squares()
+    
+    # Setting the target squares to have distance 0
     set_target_squares(maze, target_squares)
-
-    stack = []
-    for target_cell in target_squares:
-        stack.append(target_cell)
-        
+    
+    # Starting the stack, will hold tuples of indecies of target cells
+    stack = create_stack_with_targets(target_squares)
 
     while len(stack) != 0:
         cell = stack.pop(-1)
+            
         neighbors = get_neighbors(maze, cell)
-        # minDist is the minimum distance of the neighbors
+        #minDist is the minimum distance of the neighbors
         minDist = get_distance(maze, cell)+1
         for neighbor in neighbors:
-            k, l = neighbor
-            if (maze[k][l]["distance"] == 0):
+            #If the neighbor has a distance larger than the current cell + 1
+            if (get_distance(maze, neighbor) == 0): 
                 continue
             else:
-            # If the neighbor has a distance larger than the current cell distance + 1
                 if get_distance(maze, neighbor) > minDist:
-                    # Then set the distance to the current cell distance + 1, and add neighbor to stack
+                    #Then set the distance to the current cell + 1, and add neighbor to stack
                     set_distance(maze, neighbor, minDist)
                     stack.append(neighbor)
-
 
 
 def get_neighbors(maze, cell):
@@ -80,6 +97,7 @@ def get_neighbors(maze, cell):
     col_cells = [0, 1, 0, -1]
     
     for k in range(4):
+        # If the walls value contains a specific bit (ex: 2, North)
         if maze[i][j]["walls"] & 2**k:
             #Wall
             continue
