@@ -27,17 +27,16 @@ def clear_visited(maze):
         for j in range(width):
             set_unvisited(maze, (i, j))
 
-
-'''
-Sets the target cell to have distance 0
-and recalculates the distance for every other
-cell in the maze, taking into account walls
-
-Parameters:
-maze: the maze
-target: tuple indecies of the target cell
-'''
 def set_target(maze, target):
+    '''
+    Sets the target cell to have distance 0
+    and recalculates the distance for every other
+    cell in the maze, taking into account walls
+
+    Parameters:
+    maze: the maze
+    target: tuple indecies of the target cell
+    '''
     #Setting all cells to have large distance
     for i in range(height):
         for j in range(width):
@@ -77,13 +76,13 @@ def set_target(maze, target):
 
 
 
-'''
-Will return a list of neighbors of a cell taking into account walls
-Takes the maze as first argument
-Takes the tuple of the cells index as second argument
-returns a list of tuples of the neighbors
-'''
 def get_neighbors(maze, cell):
+    '''
+    Will return a list of neighbors of a cell taking into account walls
+    Takes the maze as first argument
+    Takes the tuple of the cells index as second argument
+    returns a list of tuples of the neighbors
+    '''
     i, j = cell
     neighbors = []
     row_cells = [-1, 0, 1, 0]
@@ -101,21 +100,21 @@ def get_neighbors(maze, cell):
 
 
 
-'''
-Finds the minimum distance in negihbors of the given cell
-
-Parameters:
-maze: the maze
-cell: the cell to find the minimum distance negihbors of (tuple of indecies)
-ignoreVisited: if true, will ignore cells that have been visited
-
-Returns:
-The minimum distance of the neighboring cells,
-the direction of the minimum distance, returned as an int
-0 for north, 1 for east, 2 for south, 3 for west
-These ints can be used in row_cells and col_cells
-'''
 def get_min_neighbors(maze, cell, ignoreVisited=False):
+    '''
+    Finds the minimum distance in neighbors of the given cell
+
+    Parameters:
+    maze: the maze
+    cell: the cell to find the minimum distance neighbors of (tuple of indecies)
+    ignoreVisited: if true, will ignore cells that have been visited
+
+    Returns:
+    The minimum distance of the neighboring cells,
+    the direction of the minimum distance, returned as an int
+    0 for north, 1 for east, 2 for south, 3 for west
+    These ints can be used in row_cells and col_cells
+    '''
     i, j = cell
     neighbors = []
     min_dist = 10000
@@ -136,13 +135,15 @@ def get_min_neighbors(maze, cell, ignoreVisited=False):
             else:
                 neighbors.append((i+row_cells[k], j+col_cells[k]))
 
-            if maze[i+row_cells[k]][j+col_cells[k]]["distance"] < min_dist: #new minimum distance
-                min_dist = maze[i+row_cells[k]][j+col_cells[k]]["distance"]
+        for neighbor in neighbors:
+            neighbor_row, neighbor_col = neighbors
+            if maze[neighbor_row][neighbor_col]["distance"] < min_dist: #new minimum distance
+                min_dist = maze[neighbor_row][neighbor_col]["distance"]
                 direction = k
                 tied_cells = []
-            if maze[i+row_cells[k]][j+col_cells[k]]["distance"] == min_dist:
+            if maze[neighbor_row][neighbor_col]["distance"] == min_dist:
                 #Same distance
-                tied_cells.append((i+row_cells[k], j+col_cells[k]))
+                tied_cells.append(neighbor)
 
     return min_dist, direction, neighbors, tied_cells
 
@@ -164,15 +165,15 @@ def walldetect(maze,compmaze, pos):
 
 
 
-'''
-Updates the maze to reflect the walls of the current cell
-using flood fill algrorithm
-
-Parameters:
-maze: the maze
-cell: the cell where new walls were placed (tuple of indecies)
-'''
 def update(cell,maze):
+    '''
+    Updates the maze to reflect the walls of the current cell
+    using flood fill algrorithm
+
+    Parameters:
+    maze: the maze
+    cell: the cell where new walls were placed (tuple of indecies)
+    '''
     stack = []
     stack.append(cell)
     while len(stack) != 0:
@@ -195,7 +196,7 @@ def backtrack(maze, pos, path):
         
         i, j = pos
         pos = (i-row_cells[direction], j-col_cells[direction])
-        minDist, new_direction, neighbors, tied_cell = get_min_neighbors(maze, pos, ignoreVisited=True)
+        _, new_direction, neighbors, tied_cell = get_min_neighbors(maze, pos, ignoreVisited=True)
         print_maze(maze, pos)
         sleep(0.5)
     
@@ -269,13 +270,13 @@ if __name__ == "__main__":
 
     pos, unexplored = floodfill(maze, solution, pos, target)
 
-    while unexplored != []:
-        #Get to unexplored cell
-        current_cell = unexplored.pop(0)
-        _, direction, neighbors, tied_cells = get_min_neighbors(maze, current_cell, ignoreVisited=True)
-        if len(neighbors) != 0:
-            pos = move_to_target(maze, pos, current_cell)
-            pos, tmp = floodfill(maze, solution, pos, target)
-            unexplored.extend(tmp)
+    # while unexplored != []:
+    #     #Get to unexplored cell
+    #     current_cell = unexplored.pop(0)
+    #     _, direction, neighbors, tied_cells = get_min_neighbors(maze, current_cell, ignoreVisited=True)
+    #     if len(neighbors) != 0:
+    #         pos = move_to_target(maze, pos, current_cell)
+    #         pos, tmp = floodfill(maze, solution, pos, target)
+    #         unexplored.extend(tmp)
 
 
