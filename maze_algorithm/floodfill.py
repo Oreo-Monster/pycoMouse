@@ -85,8 +85,8 @@ def get_neighbors(maze, cell):
     '''
     i, j = cell
     neighbors = []
-    row_cells = [-1, 0, 1, 0]
-    col_cells = [0, 1, 0, -1]
+    horizontal_direction = [-1, 0, 1, 0]
+    vertical_direction = [0, 1, 0, -1]
     
     for k in range(4):
         if maze[i][j]["walls"] & 2**k:
@@ -94,7 +94,7 @@ def get_neighbors(maze, cell):
             continue
         else:
             #Open
-            neighbors.append((i+row_cells[k], j+col_cells[k]))
+            neighbors.append((i+horizontal_direction[k], j+vertical_direction[k]))
 
     return neighbors
 
@@ -113,14 +113,14 @@ def get_min_neighbors(maze, cell, ignoreVisited=False):
     The minimum distance of the neighboring cells,
     the direction of the minimum distance, returned as an int
     0 for north, 1 for east, 2 for south, 3 for west
-    These ints can be used in row_cells and col_cells
+    These ints can be used in horizontal_direction and vertical_direction
     '''
     i, j = cell
     neighbors = []
     min_dist = 10000
     direction = -1
-    row_cells = [-1, 0, 1, 0]
-    col_cells = [0, 1, 0, -1]
+    horizontal_direction = [-1, 0, 1, 0]
+    vertical_direction = [0, 1, 0, -1]
     tied_cells = [] #List of cells with the same distance as the minimum distance
     
     for k in range(4):
@@ -129,11 +129,11 @@ def get_min_neighbors(maze, cell, ignoreVisited=False):
             continue
         else:
             #Open
-            if ignoreVisited and maze[i+row_cells[k]][j+col_cells[k]]["visited"]:
+            if ignoreVisited and maze[i+horizontal_direction[k]][j+vertical_direction[k]]["visited"]:
                 #Visited
                 continue
             else:
-                neighbors.append((i+row_cells[k], j+col_cells[k]))
+                neighbors.append((i+horizontal_direction[k], j+vertical_direction[k]))
 
         for neighbor in neighbors:
             neighbor_row, neighbor_col = neighbors
@@ -189,13 +189,13 @@ def backtrack(maze, pos, path):
     if len(path) == 0:
         return None, pos, None
     neighbors = []
-    row_cells = [-1, 0, 1, 0]
-    col_cells = [0, 1, 0, -1]
+    horizontal_direction = [-1, 0, 1, 0]
+    vertical_direction = [0, 1, 0, -1]
     while len(neighbors) == 0 and len(path) != 0:
         direction = path.pop(-1)
         
         i, j = pos
-        pos = (i-row_cells[direction], j-col_cells[direction])
+        pos = (i-horizontal_direction[direction], j-vertical_direction[direction])
         _, new_direction, neighbors, tied_cell = get_min_neighbors(maze, pos, ignoreVisited=True)
         print_maze(maze, pos)
         sleep(0.5)
@@ -204,8 +204,8 @@ def backtrack(maze, pos, path):
 
 
 def floodfill(maze, solution, pos, target):
-    row_cells = [-1, 0, 1, 0]
-    col_cells = [0, 1, 0, -1]
+    horizontal_direction = [-1, 0, 1, 0]
+    vertical_direction = [0, 1, 0, -1]
 
     set_target(maze, target)
     
@@ -233,7 +233,7 @@ def floodfill(maze, solution, pos, target):
 
         #Move to the next cell
         i, j = pos
-        pos = (i+row_cells[direction], j+col_cells[direction])
+        pos = (i+horizontal_direction[direction], j+vertical_direction[direction])
         #add direction to path
         path.append(direction)
         print_maze(maze, pos)
@@ -243,14 +243,14 @@ def floodfill(maze, solution, pos, target):
 
 
 def move_to_target(maze, pos, target):
-    row_cells = [-1, 0, 1, 0]
-    col_cells = [0, 1, 0, -1]
+    horizontal_direction = [-1, 0, 1, 0]
+    vertical_direction = [0, 1, 0, -1]
     set_target(maze, target)
     while pos != target:
 
         _, direction, _, _ = get_min_neighbors(maze, pos, ignoreVisited=False)
         i, j = pos
-        pos = (i+row_cells[direction], j+col_cells[direction])
+        pos = (i+horizontal_direction[direction], j+vertical_direction[direction])
 
         print_maze(maze, pos)
         sleep(0.5)
