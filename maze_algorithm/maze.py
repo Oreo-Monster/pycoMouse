@@ -15,11 +15,15 @@ def create_maze(height, width):
             
     return maze
 
-#function for printing out maze with distances and walls
-#There will be a + at each corner of cell
-#Walls will be represented by a | or ---
-#The distance to the target will be printed in the cell
 def print_maze(maze, pos=(-1,-1)):
+    '''
+    Function to print out a maze with distances and walls.
+    + represents the posts and | or --- represents walls.
+
+    Parameters:
+    maze - the maze to print out
+    pos - the position of the mouse
+    '''
     for i in range(height):
         ToplineSTR = "+"
         BottomLineSTR = ""
@@ -71,8 +75,11 @@ def print_maze(maze, pos=(-1,-1)):
 
 def read_maze(maze, filename):
     '''
-    Reads a maze from a text file
-    Returns a maze
+    Reads a maze from a text file.
+    
+    Params:
+    maze - the maze to read values into
+    filename - the name of the file to be read
     '''
     __location__ = os.path.realpath(
     os.path.join(os.getcwd(), os.path.dirname(__file__)))
@@ -85,16 +92,17 @@ def read_maze(maze, filename):
             
             add_wall(maze, (x, y), wall)
 
-'''
-Adds wall(s) to the given cell with an input file
-
-Parameters:
-maze: the maze
-cell: the cell to add the wall to (tuple of indecies)
-wall: the wall to add (string, NORTH, SOUTH, EAST, WEST)
-Wall can be a list of walls as well
-'''
 def add_wall(maze, cell, wall):
+    '''
+    Adds wall(s) to the given cell with an input file
+
+    Parameters:
+    maze: the maze
+    cell: the cell to add the wall to (tuple of indecies)
+    wall: the wall to add (string, NORTH, SOUTH, EAST, WEST)
+    Wall can be a list of walls as well
+    '''
+    
     i, j = cell
     
     if isinstance(wall, list):
