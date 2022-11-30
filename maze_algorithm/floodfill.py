@@ -136,7 +136,7 @@ def get_min_neighbors(maze, cell, ignoreVisited=False):
                 neighbors.append((i+horizontal_direction[k], j+vertical_direction[k]))
 
         for neighbor in neighbors:
-            neighbor_row, neighbor_col = neighbors
+            neighbor_row, neighbor_col = neighbor
             if maze[neighbor_row][neighbor_col]["distance"] < min_dist: #new minimum distance
                 min_dist = maze[neighbor_row][neighbor_col]["distance"]
                 direction = k
@@ -261,7 +261,7 @@ def move_to_target(maze, pos, target):
 if __name__ == "__main__":
 
     solution = create_maze(height, width)
-    read_maze(solution, "maze1.txt")
+    read_maze(solution, "maze2.txt")
 
     maze = create_maze(height, width)
     target = (height//2, width//2)
