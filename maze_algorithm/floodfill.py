@@ -198,7 +198,7 @@ def backtrack(maze, pos, path):
         pos = (i-horizontal_direction[direction], j-vertical_direction[direction])
         _, new_direction, neighbors, tied_cell = get_min_neighbors(maze, pos, ignoreVisited=True)
         print_maze(maze, pos)
-        sleep(0.5)
+        sleep(0.05)
     
     return new_direction, pos, tied_cell
 
@@ -219,8 +219,6 @@ def floodfill(maze, solution, pos, target):
         #set current position to visited
         set_visited(maze, pos)
 
-        #Update the maze to reflect the walls of the current cell
-        update(pos, maze)
         #Find the next cell to move to
         _, direction, neighbors, tied_cells = get_min_neighbors(maze, pos, ignoreVisited=True)
 
@@ -237,7 +235,7 @@ def floodfill(maze, solution, pos, target):
         #add direction to path
         path.append(direction)
         print_maze(maze, pos)
-        sleep(0.5)
+        sleep(0.05)
 
     return pos, unexplored
 
