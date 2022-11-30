@@ -44,23 +44,62 @@ def set_target(maze, target):
             maze[i][j]["distance"] = 5000
 
     i, j = target
+    target2 = i-1, j
+    target3 = i, j-1
+    target4 = i-1, j-1
     #Setting the target cell to have distance 0
     maze[i][j]["distance"] = 0
+    maze[i-1][j]["distance"] = 0
+    maze[i][j-1]["distance"] = 0
+    maze[i-1][j-1]["distance"] = 0
     #Starting the stack, will hold tuples of indecies of cells
     stack = []
     stack.append(target)
+    stack.append(target2)
+    stack.append(target3)
+    stack.append(target4)
 
     while len(stack) != 0:
         cell = stack.pop(-1)
+            
         neighbors = get_neighbors(maze, cell)
         #minDist is the minimum distance of the neighbors
         minDist = get_distance(maze, cell)+1
         for neighbor in neighbors:
             #If the neighbor has a distance larger than the current cell + 1
-            if get_distance(maze, neighbor) > minDist:
-                #Then set the distance to the current cell + 1, and add neighbor to stack
-                set_distance(maze, neighbor, minDist)
-                stack.append(neighbor)
+            if (get_distance(maze, neighbor) == 0): 
+                continue
+            else:
+                if get_distance(maze, neighbor) > minDist:
+                    #Then set the distance to the current cell + 1, and add neighbor to stack
+                    set_distance(maze, neighbor, minDist)
+                    stack.append(neighbor)
+
+
+
+'''
+Will return a list of neighbors of a cell taking into account walls
+Takes the maze as first argument
+Takes the tuple of the cells index as second argument
+returns a list of tuples of the neighbors
+'''
+def get_neighbors(maze, cell):
+    i, j = cell
+    neighbors = []
+    row_cells = [-1, 0, 1, 0]
+    col_cells = [0, 1, 0, -1]
+    
+    for k in range(4):
+        if maze[i][j]["walls"] & 2**k:
+            #Wall
+            continue
+        else:
+            #Open
+            neighbors.append((i+row_cells[k], j+col_cells[k]))
+
+    return neighbors
+
+
 
 '''
 Finds the minimum distance in negihbors of the given cell
@@ -124,27 +163,6 @@ def walldetect(maze,compmaze, pos):
     maze[i][j]["walls"] = compmaze[i][j]["walls"] 
 
 
-
-def get_neighbors(maze, cell):
-    '''
-    Will return a list of neighbors of a cell taking into account walls
-    Takes the maze as first argument
-    Takes the tuple of the cells index as second argument
-    returns a list of tuples of the neighbors
-    '''
-    i, j = cell
-    neighbors = []
-    row_cells = [-1, 0, 1, 0]
-    col_cells = [0, 1, 0, -1]
-    for k in range(4):
-        if maze[i][j]["walls"] & 2**k:
-            #Wall
-            continue
-        else:
-            #Open
-            neighbors.append((i+row_cells[k], j+col_cells[k]))
-
-    return neighbors
 
 '''
 Updates the maze to reflect the walls of the current cell
@@ -245,7 +263,7 @@ if __name__ == "__main__":
     read_maze(solution, "maze1.txt")
 
     maze = create_maze(height, width)
-    target = (height-1, width-1)
+    target = (height//2, width//2)
 
     pos = (0,0)
 

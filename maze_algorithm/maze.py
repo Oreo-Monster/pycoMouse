@@ -1,6 +1,6 @@
 import os
 
-height, width = 11, 11
+height, width = 16, 16
 wallDictionary = {'NORTH': 1, 'EAST': 2, 'SOUTH': 4, 'WEST': 8}
 
 def create_maze(height, width):
