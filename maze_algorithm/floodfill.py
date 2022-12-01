@@ -150,16 +150,19 @@ def get_min_neighbors(maze, cell, ignoreVisited=False):
 
 
 def walldetect(maze,compmaze, pos):
-    '''update to detect walls simulation style'''
+    '''
+    Update to detect walls simulation style. 
+    
+    '''
     i,j=pos
-    i_add = [1,0,-1,0]
-    j_add = [0,-1,0,1]
+    horizontal_direction = [1,0,-1,0]
+    vertical_direction = [0,-1,0,1]
     # Adding apropiate walls to surrounding cells
     for k in range(4):
         #Make sure we dont go over the edge
-        if i+i_add[k]<0 or i+i_add[k]>=height or j+j_add[k]<0 or j+j_add[k]>=width:
+        if i+horizontal_direction[k]<0 or i+horizontal_direction[k]>=height or j+vertical_direction[k]<0 or j+vertical_direction[k]>=width:
             continue
-        maze[i+i_add[k]][j+j_add[k]]["walls"] |= (compmaze[i+i_add[k]][j+j_add[k]]["walls"] & 2**k)
+        maze[i+horizontal_direction[k]][j+vertical_direction[k]]["walls"] |= (compmaze[i+horizontal_direction[k]][j+vertical_direction[k]]["walls"] & 2**k)
     #Setting wall for current cell
     maze[i][j]["walls"] = compmaze[i][j]["walls"] 
 
@@ -258,9 +261,11 @@ def move_to_target(maze, pos, target):
 
 if __name__ == "__main__":
 
+    # Acts as the maze itself
     solution = create_maze(height, width)
     read_maze(solution, "maze2.txt")
 
+    # Acts as the current maze stored in the robot (doesn't know where the walls are)
     maze = create_maze(height, width)
     target = (height//2, width//2)
 
