@@ -1,3 +1,5 @@
+import numpy as np
+
 #Implemntation of Flood Fill algorrim for 
 #solving maze
 
